@@ -1,0 +1,75 @@
+#include <HCSR04.h>
+#include <LiquidCrystal.h>
+
+// Initialize LCD pins
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+
+// Ultrasonic sensor pins
+const byte triggerPin = 4;
+const byte echoPin = 3;
+
+// Buzzer pin
+const int buzzerPin = A1;
+
+// Distance threshold (in cm) - adjust this value as needed
+const float DISTANCE_THRESHOLD = 10.0;  // Example: trigger when object is closer than 10cm
+
+// Track if action has been triggered
+bool actionTriggered = false;
+
+void setup() {
+  // Initialize Serial communication
+  Serial.begin(9600);
+  
+  // Initialize ultrasonic sensor
+  HCSR04.begin(triggerPin, echoPin);
+  
+  // Initialize LCD
+  lcd.begin(16, 2);
+  lcd.print("Distance:");
+  
+  // Set up buzzer pin
+  pinMode(buzzerPin, OUTPUT);
+}
+
+void loop() {
+  // Get distance measurements
+  double* distances = HCSR04.measureDistanceCm();
+  float currentDistance = distances[0];
+  
+  // Update LCD display
+  lcd.setCursor(0, 1);
+  lcd.print("Dist: ");
+  lcd.print(currentDistance);
+  lcd.print(" cm    ");  // Extra spaces to clear old characters
+  
+  // Print to Serial for debugging
+  Serial.print("Distance: ");
+  Serial.print(currentDistance);
+  Serial.println(" cm");
+  
+  // Check if distance is below threshold
+  if (currentDistance <= DISTANCE_THRESHOLD && !actionTriggered) {
+    // Trigger buzzer
+    tone(buzzerPin, 100, 1000);
+    
+    // Update LCD with alert
+    lcd.setCursor(0, 0);
+    lcd.print("Object Detected!");
+    
+    actionTriggered = true;
+    
+    // You can add additional actions here
+    
+  } else if (currentDistance > DISTANCE_THRESHOLD) {
+    // Reset triggered state when object moves away
+    actionTriggered = false;
+    lcd.setCursor(0, 0);
+    lcd.print("Distance:      ");
+  }
+  
+  // Delay between readings
+  delay(250);  // Matches your original code's delay
+  
+  Serial.println("---");
+}
