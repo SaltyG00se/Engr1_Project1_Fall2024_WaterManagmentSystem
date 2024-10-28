@@ -1,0 +1,27 @@
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+int sensorPin = A0;
+
+void setup() {
+pinMode(sensorPin, INPUT);
+  lcd.begin(16, 2);
+
+  lcd.print("Moistness Reading");
+}
+
+void loop() {
+
+  lcd.setCursor(0, 1);
+
+int sensorReading = analogRead(sensorPin);
+
+ lcd.print(sensorReading);
+
+if (sensorReading > 300){
+  tone(A1,100,1000);
+}else{
+ delay(1000);
+}
+
+}
